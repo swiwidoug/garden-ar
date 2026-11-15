@@ -7,20 +7,21 @@
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
   <style>
     html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; background: #f3f1ea; }
+    body { display: flex; flex-direction: column; height: 100dvh; }
     header { padding: 12px 16px; font-weight: 600; }
-    model-viewer { width: 100%; height: calc(100% - 48px); }
-    .ar-btn {
-      position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
-      padding: 14px 28px; border: none; border-radius: 28px;
-      background: #2f6b3a; color: #fff; font-size: 17px; font-weight: 600;
-      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    model-viewer { flex: 1; width: 100%; min-height: 0; }
+    .bar { padding: 12px 16px 20px; text-align: center; }
+    #arbtn {
+      width: 100%; max-width: 360px; padding: 16px 24px; border: none; border-radius: 28px;
+      background: #2f6b3a; color: #fff; font-size: 18px; font-weight: 600;
     }
+    #status { margin-top: 8px; font-size: 13px; color: #555; min-height: 18px; }
   </style>
 </head>
 <body>
   <header>Garden AR – 3 m tree</header>
   <!-- To show a different model, change the src below to the .glb file name -->
-  <model-viewer
+  <model-viewer id="mv"
       src="garden_tree_ar.glb"
       alt="3 m tree for the front garden"
       ar
@@ -28,9 +29,33 @@
       ar-scale="fixed"
       ar-placement="floor"
       camera-controls
-      touch-action="pan-y"
       shadow-intensity="1">
-    <button slot="ar-button" class="ar-btn">View in your garden</button>
   </model-viewer>
+  <div class="bar">
+    <button id="arbtn">View in your garden</button>
+    <div id="status">Loading model…</div>
+  </div>
+  <script>
+    const mv = document.getElementById('mv');
+    const btn = document.getElementById('arbtn');
+    const st = document.getElementById('status');
+    mv.addEventListener('load', () => {
+      st.textContent = 'Model loaded. AR available: ' + (mv.canActivateAR ? 'yes' : 'no');
+    });
+    mv.addEventListener('error', (e) => {
+      const d = e.detail && e.detail.sourceError ? e.detail.sourceError.message : 'could not load the model';
+      st.textContent = 'Error: ' + d;
+    });
+    mv.addEventListener('ar-status', (e) => {
+      st.textContent = 'AR status: ' + e.detail.status;
+    });
+    btn.addEventListener('click', () => {
+      if (mv.canActivateAR) {
+        mv.activateAR();
+      } else {
+        st.textContent = 'AR is not available in this browser (AR available: no)';
+      }
+    });
+  </script>
 </body>
 </html>
